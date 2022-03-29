@@ -153,20 +153,15 @@ function Copy-AgentRoot {
         Copy-Item -Path "$RootDirectory\src\Agent\Miscellaneous\netcore20-agent-readme.md" -Destination "$Destination\README.md" -Force 
     }
 
-    $grpcDir = Get-GrpcPackagePath $RootDirectory
     if ($Linux) {
         if ($Architecture -like "x64") {
-            Copy-Item -Path "$grpcDir\runtimes\linux-x64\native\libgrpc_csharp_ext.x64.so" -Destination "$Destination" -Force 
             Copy-Item -Path "$RootDirectory\src\Agent\_profilerBuild\linux-x64-release\libNewRelicProfiler.so" -Destination "$Destination" -Force 
         }
         if ($Architecture -like "ARM64") {
-            Copy-Item -Path "$grpcDir\runtimes\linux-arm64\native\libgrpc_csharp_ext.arm64.so" -Destination "$Destination" -Force 
             Copy-Item -Path "$RootDirectory\src\Agent\_profilerBuild\linux-arm64-release\libNewRelicProfiler.so" -Destination "$Destination" -Force 
         }
     }
     else {
-        Copy-Item -Path "$grpcDir\runtimes\win-x86\native\*.dll" -Destination "$Destination" -Force
-        Copy-Item -Path "$grpcDir\runtimes\win-x64\native\*.dll" -Destination "$Destination" -Force
 
         if ($Architecture -like "x64" ) {
             Copy-Item -Path "$RootDirectory\src\Agent\_profilerBuild\x64-Release\NewRelic.Profiler.dll" -Destination "$Destination" -Force 
@@ -282,22 +277,3 @@ function Set-SessionEnvironment {
     }
 }
 
-#####################
-# Private Functions #
-#####################
-
-function Get-GrpcPackagePath {
-    param(
-        [Parameter(Mandatory=$true)][string]$RootDirectory
-    )
-
-    $ErrorActionPreference = "Stop"
-
-    $match = Select-String -Path "$RootDirectory\src\Agent\NewRelic\Agent\Core\Core.csproj" -Pattern '<PackageReference Include="Grpc.Core"'
-    $versionIndex = $match.Line.IndexOf('"', $match.Line.IndexOf('Version')) + 1
-    $grpcVersion = $match.Line.TrimEnd('/>').TrimEnd(' ').TrimEnd('"').Substring($versionIndex)
-    $rawpkgList = $(dotnet nuget locals global-packages --list)
-    $pkgList = $rawpkgList -Replace "global-packages: "
-    $grpcDir = "$pkgList\Grpc.Core\$grpcVersion"
-    $grpcDir
-}
