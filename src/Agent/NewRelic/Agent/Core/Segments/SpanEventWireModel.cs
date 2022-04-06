@@ -10,7 +10,6 @@ using Newtonsoft.Json;
 using NewRelic.Agent.Core.JsonConverters;
 using NewRelic.Collections;
 using NewRelic.Agent.Core.DataTransport;
-using NewRelic.Agent.Core.WireModels;
 
 namespace NewRelic.Agent.Core.Segments
 {

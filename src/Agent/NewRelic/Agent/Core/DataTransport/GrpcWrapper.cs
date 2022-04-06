@@ -4,14 +4,12 @@
 using System;
 using Grpc.Core;
 using System.Threading;
-using System.Collections.Generic;
 using NewRelic.Agent.Extensions.Providers.Wrapper;
 using NewRelic.Core.Logging;
 using System.Threading.Tasks;
 using Grpc.Net.Client;
 using NewRelic.Agent.Core.Segments;
 using System.Net.Http;
-using Grpc.Net.Client.Web;
 
 namespace NewRelic.Agent.Core.DataTransport
 {
@@ -57,7 +55,7 @@ namespace NewRelic.Agent.Core.DataTransport
         bool IsConnected { get; }
         bool CreateChannel(string host, int port, bool ssl, Metadata headers, int connectTimeoutMs, CancellationToken cancellationToken);
         bool CreateStreams(Metadata headers, int connectTimeoutMs, CancellationToken cancellationToken, out IClientStreamWriter<TRequest> requestStream, out IAsyncStreamReader<TResponse> responseStream);
-        bool TrySendData(IClientStreamWriter<TRequest> stream, TRequest item, int sendTimeoutMs, CancellationToken cancellationToken);
+        Task<bool> TrySendData(IClientStreamWriter<TRequest> stream, TRequest item, CancellationToken cancellationToken);
         void TryCloseRequestStream(IClientStreamWriter<TRequest> requestStream);
         void Shutdown();
     }
@@ -86,12 +84,14 @@ namespace NewRelic.Agent.Core.DataTransport
                 var grpcChannelOptions = new GrpcChannelOptions();
                 grpcChannelOptions.Credentials = credentials;
 
-                //grpcChannelOptions.HttpHandler = new GrpcWebHandler(new HttpClientHandler());
+                var uriBuilder = new UriBuilder
+                {
+                    Scheme = "https",
+                    Host = host,
+                    Port = port
+                };
 
-                var uriBuilder = new UriBuilder();
-                uriBuilder.Scheme = "https";
-                uriBuilder.Host = host;
-                uriBuilder.Port = port;
+                grpcChannelOptions.HttpClient = new HttpClient();
 
                 var channel = GrpcChannel.ForAddress(uriBuilder.Uri, grpcChannelOptions);
 
@@ -169,7 +169,7 @@ namespace NewRelic.Agent.Core.DataTransport
         }
 
 
-        public bool TrySendData(IClientStreamWriter<TRequest> requestStream, TRequest item, int sendTimeoutMs, CancellationToken cancellationToken)
+        public async Task<bool> TrySendData(IClientStreamWriter<TRequest> requestStream, TRequest item, CancellationToken cancellationToken)
         {
             try
             {
@@ -179,7 +179,9 @@ namespace NewRelic.Agent.Core.DataTransport
                     return false;
                 }
 
-                return requestStream.WriteAsync(item).Wait(sendTimeoutMs, cancellationToken);
+                await requestStream.WriteAsync(item);
+
+                return true;
             }
             catch (Exception ex)
             {

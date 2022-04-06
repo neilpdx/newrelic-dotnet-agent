@@ -314,8 +314,8 @@ namespace NewRelic.Agent.Core.DataTransport
         {
             var appNames = string.Join(":", _configuration.ApplicationNames.ToArray());
 
-#if NETSTANDARD2_0
-			return $"{Path.GetFileName(_processStatic.GetCurrentProcess().MainModuleFileName)}{appNames}";
+#if NETSTANDARD2_0_OR_GREATER
+            return $"{Path.GetFileName(_processStatic.GetCurrentProcess().MainModuleFileName)}{appNames}";
 #else
 
             return HttpRuntime.AppDomainAppId != null

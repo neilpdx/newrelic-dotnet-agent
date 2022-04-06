@@ -911,7 +911,7 @@ namespace NewRelic.Agent.Core.Configuration
 
         private int GetInfiniteTracingCountWorkers()
         {
-            const int countWorkersDefault = 10;
+            const int countWorkersDefault = 1;
             return _infiniteTracingCountWorkers
                 ?? (_infiniteTracingCountWorkers = EnvironmentOverrides(TryGetAppSettingAsIntWithDefault("InfiniteTracingSpanEventsStreamsCount", countWorkersDefault), "NEW_RELIC_INFINITE_TRACING_SPAN_EVENTS_STREAMS_COUNT")).GetValueOrDefault();
         }

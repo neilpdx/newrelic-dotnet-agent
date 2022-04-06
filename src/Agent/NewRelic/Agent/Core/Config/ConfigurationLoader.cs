@@ -38,7 +38,7 @@ namespace NewRelic.Agent.Core.Config
         /// <returns></returns>
         public static ValueWithProvenance<string> GetWebConfigAppSetting(string key)
         {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0_OR_GREATER
 			return null;
 #else
             try
@@ -136,9 +136,9 @@ namespace NewRelic.Agent.Core.Config
 
         private static string TryGetAgentConfigFileFromAppRoot()
         {
-#if NETSTANDARD2_0
-			try
-			{
+#if NETSTANDARD2_0_OR_GREATER
+            try
+            {
 				var filename = string.Empty;
 
 				var entryAssembly = Assembly.GetEntryAssembly();
@@ -524,9 +524,9 @@ namespace NewRelic.Agent.Core.Config
                 return Strings.SafeFileName(name);
             }
 
-#if NETSTANDARD2_0
-			try
-			{
+#if NETSTANDARD2_0_OR_GREATER
+            try
+            {
 				name = AppDomain.CurrentDomain.FriendlyName;
 			}
 			catch (Exception)

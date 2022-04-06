@@ -89,7 +89,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
 
         public System.Action WithShutdownImpl { get; set; } = () => { };
 
-        public System.Func<IClientStreamWriter<TRequest>, TRequest, int, CancellationToken, bool> WithTrySendDataImpl { get; set; } = (requestStream, request, timeoutMs, CancellationToken) => true;
+        public System.Func<IClientStreamWriter<TRequest>, TRequest, CancellationToken, bool> WithTrySendDataImpl { get; set; } = (requestStream, request, CancellationToken) => true;
 
         public bool IsConnected => WithIsConnectedImpl?.Invoke() ?? false;
 
@@ -118,9 +118,9 @@ namespace NewRelic.Agent.Core.Spans.Tests
         {
         }
 
-        public bool TrySendData(IClientStreamWriter<TRequest> stream, TRequest item, int timeoutWindowMs, CancellationToken cancellationToken)
+        public async Task<bool> TrySendData(IClientStreamWriter<TRequest> stream, TRequest item, CancellationToken cancellationToken)
         {
-            return WithTrySendDataImpl(stream, item, timeoutWindowMs, cancellationToken);
+            return WithTrySendDataImpl(stream, item, cancellationToken);
         }
     }
 
@@ -262,7 +262,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
             var countSends = 0;
 
             _grpcWrapper.WithIsConnectedImpl = () => isChannelConnected;
-            _grpcWrapper.WithTrySendDataImpl = (requestStream, request, timeoutMs, CancellationToken) =>
+            _grpcWrapper.WithTrySendDataImpl = (requestStream, request, CancellationToken) =>
             {
                 countSends++;
                 if(countSends > 1)
@@ -487,7 +487,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
             var item4 = GetRequestModel();
             var item5 = GetRequestModel();
 
-            _grpcWrapper.WithTrySendDataImpl = (stream, requestBatch, timeout, token) =>
+            _grpcWrapper.WithTrySendDataImpl = (stream, requestBatch, token) =>
                 {
                     var requests = GetBatchItems(requestBatch);
                     actualAttempts.AddRange(requests);
@@ -546,7 +546,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
 
             var item1 = GetRequestModel();
 
-            _grpcWrapper.WithTrySendDataImpl = (stream, requestBatch, timeout, token) =>
+            _grpcWrapper.WithTrySendDataImpl = (stream, requestBatch, token) =>
             {
 
                 var requests = GetBatchItems(requestBatch);
@@ -599,7 +599,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
 
             var expectedItems = requestItems.ToList();
 
-            _grpcWrapper.WithTrySendDataImpl = (stream, requestBatch, timeout, token) =>
+            _grpcWrapper.WithTrySendDataImpl = (stream, requestBatch, token) =>
                 {
                     var requests = GetBatchItems(requestBatch);
                     actualItems.AddRange(requests);
@@ -638,7 +638,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
             Mock.Arrange(() => _currentConfiguration.InfiniteTracingBatchSizeSpans).Returns(configBatchSize);
 
             var actualBatchSizes = new List<int>();
-            _grpcWrapper.WithTrySendDataImpl = (stream, batch, timeoutMs, token) =>
+            _grpcWrapper.WithTrySendDataImpl = (stream, batch, token) =>
             {
                 var items = GetBatchItems(batch);
                 actualBatchSizes.Add(items.Count());
@@ -681,7 +681,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
             var streamCancellationTokens = new List<CancellationToken>();
 
             var actualAttempts = 0;
-            _grpcWrapper.WithTrySendDataImpl = (stream, item, timeoutMs, token) =>
+            _grpcWrapper.WithTrySendDataImpl = (stream, item, token) =>
             {
                 var attempt = actualAttempts++;
                 if (attempt > 0)
@@ -723,7 +723,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
             var streamCancellationTokens = new List<CancellationToken>();
 
             var actualAttempts = 0;
-            _grpcWrapper.WithTrySendDataImpl = (stream, item, timeoutMs, token) =>
+            _grpcWrapper.WithTrySendDataImpl = (stream, item, token) =>
             {
                 var attempt = actualAttempts++;
                 if (attempt > 0)
@@ -864,7 +864,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
                 .DoInstead(() => actualCountTimeouts++);
 
             var actualAttempts = 0;
-            _grpcWrapper.WithTrySendDataImpl = (stream, item, timeoutMs, token) =>
+            _grpcWrapper.WithTrySendDataImpl = (stream, item, token) =>
             {
                 var attempt = actualAttempts++;
                 if (attempt > 0)
@@ -928,7 +928,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
 
             var signalIsDone = new ManualResetEventSlim();
             var invocationId = -1;
-            _grpcWrapper.WithTrySendDataImpl = (stream, item, timeoutMs, token) =>
+            _grpcWrapper.WithTrySendDataImpl = (stream, item, token) =>
             {
                 var localInvocationId = Interlocked.Increment(ref invocationId);
 
@@ -977,7 +977,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
 
             var countBatchesSent = 0;
             var countItemsSent = 0;
-            _grpcWrapper.WithTrySendDataImpl = (requestStream, request, timeoutMs, CancellationToken) =>
+            _grpcWrapper.WithTrySendDataImpl = (requestStream, request, CancellationToken) =>
             {
                 Interlocked.Increment(ref countBatchesSent);
                 if (Interlocked.Add(ref countItemsSent, request.Count) == countItemsToProcess)
@@ -1166,7 +1166,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
 
 
             var invocationId = 0;
-            _grpcWrapper.WithTrySendDataImpl = (stream, item, timeoutMs, token) =>
+            _grpcWrapper.WithTrySendDataImpl = (stream, item, token) =>
             {
                 var localInvocationId = Interlocked.Increment(ref invocationId);
 
@@ -1359,7 +1359,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
                 });
 
             var sendInvocationId = 0;
-            _grpcWrapper.WithTrySendDataImpl = (stream, item, timeoutMs, token) =>
+            _grpcWrapper.WithTrySendDataImpl = (stream, item, token) =>
             {
                 var localInvocationId = Interlocked.Increment(ref sendInvocationId);
 
@@ -1587,7 +1587,7 @@ namespace NewRelic.Agent.Core.Spans.Tests
 
 
             var invocationId = 0;
-            _grpcWrapper.WithTrySendDataImpl = (stream, item, timeoutMs, token) =>
+            _grpcWrapper.WithTrySendDataImpl = (stream, item, token) =>
             {
                 var localInvocationId = Interlocked.Increment(ref invocationId);
 

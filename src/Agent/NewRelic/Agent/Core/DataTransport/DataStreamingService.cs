@@ -471,7 +471,7 @@ namespace NewRelic.Agent.Core.DataTransport
             //Start up the workers
             for (var i = 0; i < _configuration.InfiniteTracingTraceCountConsumers; i++)
             {
-                Task.Run(() => ExecuteConsumer(_collection));
+                Task.Run(async () => await ExecuteConsumer(_collection));
             }
 
             CancellationToken.WaitHandle.WaitOne();
@@ -753,7 +753,7 @@ namespace NewRelic.Agent.Core.DataTransport
         /// in the event of unforeseen failures.
         /// </summary>
         /// <param name="collection"></param>
-        private void ExecuteConsumer(PartitionedBlockingCollection<TRequest> collection)
+        private async Task ExecuteConsumer(PartitionedBlockingCollection<TRequest> collection)
         {
             var cancellationToken = CancellationToken;
 
@@ -763,7 +763,7 @@ namespace NewRelic.Agent.Core.DataTransport
 
                 try
                 {
-                    shouldRetryImmediately = StreamRequests(collection, cancellationToken);
+                    shouldRetryImmediately = await StreamRequests(collection, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -826,7 +826,7 @@ namespace NewRelic.Agent.Core.DataTransport
             }
         }
 
-        private bool StreamRequests(PartitionedBlockingCollection<TRequest> collection, CancellationToken serviceCancellationToken)
+        private async Task<bool> StreamRequests(PartitionedBlockingCollection<TRequest> collection, CancellationToken serviceCancellationToken)
         {
             var consumerId = _consumerId.Increment();
             using (var streamCancellationTokenSource = new CancellationTokenSource())
@@ -859,7 +859,7 @@ namespace NewRelic.Agent.Core.DataTransport
 
                     _workCounter.Increment();
 
-                    var trySendStatus = TrySend(consumerId, requestStream, items, serviceCancellationToken);
+                    var trySendStatus = await TrySend(consumerId, requestStream, items, serviceCancellationToken);
 
                     _workCounter.Decrement();
 
@@ -882,7 +882,7 @@ namespace NewRelic.Agent.Core.DataTransport
             return false;
         }
 
-        private TrySendStatus TrySend(int consumerId, IClientStreamWriter<TRequestBatch> requestStream, IList<TRequest> items, CancellationToken cancellationToken)
+        private async Task<TrySendStatus> TrySend(int consumerId, IClientStreamWriter<TRequestBatch> requestStream, IList<TRequest> items, CancellationToken cancellationToken)
         {
             //If there is no channel, return
             if (cancellationToken.IsCancellationRequested)
@@ -899,7 +899,7 @@ namespace NewRelic.Agent.Core.DataTransport
                 var sentData = false;
                 using (_agentTimerService.StartNew(_timerEventNameForSend))
                 {
-                    sentData = _grpcWrapper.TrySendData(requestStream, batch, TimeoutSendDataMs, cancellationToken);
+                    sentData = await _grpcWrapper.TrySendData(requestStream, batch, cancellationToken);
                 }
 
                 if (sentData)
