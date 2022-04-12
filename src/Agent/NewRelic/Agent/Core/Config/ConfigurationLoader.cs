@@ -66,8 +66,8 @@ namespace NewRelic.Agent.Core.Config
         public static ValueWithProvenance<string> GetConfigSetting(string key)
         {
             ValueWithProvenance<string> value = GetWebConfigAppSetting(key);
-#if NET45
-			if (value.Value == null)
+#if NET46_OR_GREATER
+            if (value.Value == null)
 			{
 				value = new ValueWithProvenance<string>(ConfigurationManager.AppSettings[key],
 					"ConfigurationManager app setting");

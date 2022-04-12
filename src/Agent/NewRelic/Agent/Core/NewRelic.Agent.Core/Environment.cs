@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-#if NET45
+#if NET46_OR_GREATER
 using System.Management;
 using System.Web.Configuration;
 #endif
@@ -76,7 +76,7 @@ namespace NewRelic.Agent.Core
                 if (!String.IsNullOrEmpty(configurationService.Configuration.AppSettingsConfigFilePath))
                     AddVariable("Application Config", () => configurationService.Configuration.AppSettingsConfigFilePath);
 
-#if NET45
+#if NET46_OR_GREATER
                 // This stuff is only available to web apps.
                 if (TryGetAppDomainAppId() != null)
                 {
@@ -99,7 +99,7 @@ namespace NewRelic.Agent.Core
 				AddVariable("Debug Build", () => true.ToString());
 #endif
 
-#if NET45
+#if NET46_OR_GREATER
                 var compilationSection = WebConfigurationManager.GetSection("system.web/compilation") as CompilationSection;
                 if (compilationSection?.DefaultLanguage != null)
                     AddVariable("system.web.compilation.defaultLanguage", () => compilationSection.DefaultLanguage);
@@ -163,7 +163,7 @@ namespace NewRelic.Agent.Core
             }
         }
 
-#if NET45
+#if NET46_OR_GREATER
         private static string TryGetAppDomainAppId()
         {
             try
@@ -207,7 +207,7 @@ namespace NewRelic.Agent.Core
             }
         }
 
-#if NET45
+#if NET46_OR_GREATER
         public Version TryGetIisVersion()
         {
             try
@@ -245,14 +245,14 @@ namespace NewRelic.Agent.Core
             return AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => assembly != null)
                 .Where(assembly => assembly.GetName().Version != versionZero)
-#if NET45
+#if NET46_OR_GREATER
                 .Where(assembly => !(assembly is System.Reflection.Emit.AssemblyBuilder))
 #endif
                 .Select(assembly => assembly.FullName)
                 .ToList();
         }
 
-#if NET45
+#if NET46_OR_GREATER
         private static IEnumerable<ManagementBaseObject> TryGetManagementObjects(string query)
         {
             try

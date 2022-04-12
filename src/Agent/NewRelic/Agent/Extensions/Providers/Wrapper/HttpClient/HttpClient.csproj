@@ -5,7 +5,7 @@
     <AssemblyName>NewRelic.Providers.Wrapper.HttpClient</AssemblyName>
     <Description>HttpClient Wrapper Provider for New Relic .NET Agent</Description>
   </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System;
-#if NET45
+#if NET46_OR_GREATER
 using System.Configuration;
 using System.Runtime.Versioning;
 using System.Web.Hosting;

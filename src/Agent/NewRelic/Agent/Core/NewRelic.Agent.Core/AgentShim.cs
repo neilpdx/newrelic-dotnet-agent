@@ -115,8 +115,8 @@ namespace NewRelic.Agent.Core
             object[] args,
             ulong functionId)
         {
-#if NET45
-			if (!_initialized)
+#if NET46_OR_GREATER
+            if (!_initialized)
 			{
 				if (!TryInitialize($"{typeName}.{methodName}")) return NoOpFinishTracer;
 			}

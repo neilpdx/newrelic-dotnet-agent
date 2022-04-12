@@ -1,7 +1,7 @@
 // Copyright 2020 New Relic, Inc. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#if NET45
+#if NET46_OR_GREATER
 using System;
 
 namespace NewRelic.SystemInterfaces.Web

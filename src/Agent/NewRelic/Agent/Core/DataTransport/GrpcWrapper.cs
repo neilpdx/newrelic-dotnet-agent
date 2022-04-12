@@ -91,7 +91,13 @@ namespace NewRelic.Agent.Core.DataTransport
                     Port = port
                 };
 
+
+#if NET46
+                grpcChannelOptions.HttpHandler = new WinHttpHandler();
+#else
                 grpcChannelOptions.HttpClient = new HttpClient();
+#endif
+
 
                 var channel = GrpcChannel.ForAddress(uriBuilder.Uri, grpcChannelOptions);
 

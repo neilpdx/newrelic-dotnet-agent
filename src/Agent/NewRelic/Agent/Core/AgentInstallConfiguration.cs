@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 using System.Reflection;
 using System.Diagnostics;
 using NewRelic.Core.Logging;
-#if NET45
+#if NET46_OR_GREATER
 using System.Web;
 using Microsoft.Win32;
 #endif
@@ -32,8 +32,8 @@ namespace NewRelic.Agent.Core
         private const string NewRelicLogLevelEnvironmentVariable = "NEWRELIC_LOG_LEVEL";
 
         public static bool IsWindows { get; }
-#if NET45
-		public static DotnetFrameworkVersion DotnetFrameworkVersion { get; }
+#if NET46_OR_GREATER
+        public static DotnetFrameworkVersion DotnetFrameworkVersion { get; }
 #else
         public static DotnetCoreVersion DotnetCoreVersion { get; }
 #endif
@@ -56,8 +56,8 @@ namespace NewRelic.Agent.Core
 
         static AgentInstallConfiguration()
         {
-#if NET45
-			IsWindows = true;
+#if NET46_OR_GREATER
+            IsWindows = true;
 #else
             IsWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
 #endif
@@ -75,8 +75,8 @@ namespace NewRelic.Agent.Core
             IsNetCore30OrAbove = GetIsNetCore30OrAbove();
             ProcessId = new ProcessStatic().GetCurrentProcess().Id;
             AppDomainName = AppDomain.CurrentDomain.FriendlyName;
-#if NET45
-			if (HttpRuntime.AppDomainAppVirtualPath != null)
+#if NET46_OR_GREATER
+            if (HttpRuntime.AppDomainAppVirtualPath != null)
 			{
 				AppDomainAppVirtualPath = HttpRuntime.AppDomainAppVirtualPath;
 			}
@@ -137,8 +137,8 @@ namespace NewRelic.Agent.Core
 
         private static bool GetIsNet46OrAbove()
         {
-#if NET45
-			var net46Version = new Version(4, 0, 30319, 42000);
+#if NET46_OR_GREATER
+            var net46Version = new Version(4, 0, 30319, 42000);
 			return System.Environment.Version >= net46Version;
 #else
             return true;
@@ -147,8 +147,8 @@ namespace NewRelic.Agent.Core
 
         private static bool GetIsNetCore30OrAbove()
         {
-#if NET45
-			return false;
+#if NET46_OR_GREATER
+            return false;
 #else
             var version = System.Environment.Version;
 
@@ -165,8 +165,8 @@ namespace NewRelic.Agent.Core
         {
             var newRelicHome = System.Environment.GetEnvironmentVariable(NewRelicHomeEnvironmentVariable);
             if (newRelicHome != null && Directory.Exists(newRelicHome)) return Path.GetFullPath(newRelicHome);
-#if NET45
-			var key = Registry.LocalMachine.OpenSubKey(@"Software\New Relic\.NET Agent");
+#if NET46_OR_GREATER
+            var key = Registry.LocalMachine.OpenSubKey(@"Software\New Relic\.NET Agent");
 			if (key != null) newRelicHome = (string)key.GetValue("NewRelicHome");
 #endif
             return newRelicHome;

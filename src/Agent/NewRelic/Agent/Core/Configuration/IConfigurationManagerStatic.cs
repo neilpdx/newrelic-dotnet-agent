@@ -35,9 +35,9 @@ namespace NewRelic.Agent.Core.Configuration
         }
     }
 
-#if NET45
+#if NET46_OR_GREATER
 
-	public class ConfigurationManagerStatic : IConfigurationManagerStatic
+    public class ConfigurationManagerStatic : IConfigurationManagerStatic
 	{
 		private bool localConfigChecksDisabled;
 
