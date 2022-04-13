@@ -92,7 +92,7 @@ namespace NewRelic.Agent.Core.DataTransport
                 };
 
 
-#if NET46
+#if NET461_OR_GREATER
                 grpcChannelOptions.HttpHandler = new WinHttpHandler();
 #else
                 grpcChannelOptions.HttpClient = new HttpClient();
