@@ -5,6 +5,7 @@ using NewRelic.Agent.Core.Segments;
 using Grpc.Core;
 using System.Threading;
 using Grpc.Net.Client;
+using System;
 
 namespace NewRelic.Agent.Core.DataTransport
 {
@@ -34,7 +35,7 @@ namespace NewRelic.Agent.Core.DataTransport
             }
 
             var client = new IngestService.IngestServiceClient(channel);
-            var streams = client.RecordSpanBatch(headers: headers, cancellationToken: cancellationToken);
+            var streams = client.RecordSpanBatch(headers: headers, cancellationToken: cancellationToken, deadline: DateTime.UtcNow.AddMilliseconds(connectTimeoutMs));
 
             return streams;
         }

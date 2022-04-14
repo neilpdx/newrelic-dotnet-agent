@@ -95,13 +95,15 @@ namespace NewRelic.Agent.Core.DataTransport
 #if NET461_OR_GREATER
                 grpcChannelOptions.HttpHandler = new WinHttpHandler();
 #else
-                grpcChannelOptions.HttpClient = new HttpClient();
+                //grpcChannelOptions.HttpClient = new HttpClient();
+                grpcChannelOptions.HttpHandler = new HttpClientHandler();
+                //grpcChannelOptions.DisposeHttpClient = true;
 #endif
 
 
                 var channel = GrpcChannel.ForAddress(uriBuilder.Uri, grpcChannelOptions);
 
-                if (TestChannel(channel, headers, connectTimeoutMs, cancellationToken))
+                if (TestChannel(channel))
                 {
                     _channel = channel;
                     return true;
@@ -126,13 +128,11 @@ namespace NewRelic.Agent.Core.DataTransport
             }
         }
 
-        private bool TestChannel(GrpcChannel channel, Metadata headers, int connectTimeoutMs, CancellationToken cancellationToken)
+        private bool TestChannel(GrpcChannel channel)
         {
             try
             {
-
                 var client = new IngestService.IngestServiceClient(channel);
-
                 return true;
 
             }
