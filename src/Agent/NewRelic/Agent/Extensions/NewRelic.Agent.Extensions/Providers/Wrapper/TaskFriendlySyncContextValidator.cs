@@ -1,12 +1,6 @@
 // Copyright 2020 New Relic, Inc. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-using System;
-#if NET45
-using System.Configuration;
-using System.Runtime.Versioning;
-using System.Web.Hosting;
-#endif
 
 namespace NewRelic.Agent.Extensions.Providers.Wrapper
 {
@@ -29,29 +23,7 @@ namespace NewRelic.Agent.Extensions.Providers.Wrapper
 
         private static bool LegacyAspSyncContextConfigured()
         {
-
-#if NETSTANDARD2_0
 			return false;
-#else
-            // first check that the application is even running under ASP.NET
-            if (!HostingEnvironment.IsHosted)
-            {
-                return false;
-            }
-
-            // This will return true if the web.config includes <httpRuntime targetFramework="4.5">
-            var targetFrameworkName = AppDomain.CurrentDomain.GetData("ASPNET_TARGETFRAMEWORK") as FrameworkName;
-            if (targetFrameworkName?.Version >= new Version(4, 5))
-            {
-                return false;
-            }
-
-            // This will return true if the web.config includes <add key="aspnet:UseTaskFriendlySynchronizationContext" value="true" />
-            var appSettingValue = ConfigurationManager.AppSettings["aspnet:UseTaskFriendlySynchronizationContext"];
-            bool.TryParse(appSettingValue, out var isTaskFriendlySyncContextEnabled);
-
-            return !isTaskFriendlySyncContextEnabled;
-#endif
         }
 
     }

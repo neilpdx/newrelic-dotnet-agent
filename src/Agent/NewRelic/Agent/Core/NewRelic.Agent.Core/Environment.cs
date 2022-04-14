@@ -6,12 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-#if NET45
-using System.Management;
-using System.Web.Configuration;
-#endif
-using System.Web;
-using Microsoft.Win32;
 using NewRelic.Agent.Core.Utilities;
 using NewRelic.Core.Logging;
 using NewRelic.SystemInterfaces;
@@ -45,15 +39,12 @@ namespace NewRelic.Agent.Core
                 AddVariable("Product Name", () => fileVersionInfo?.ProductName);
 
                 AddVariable("OS", () => System.Environment.OSVersion?.VersionString);
-#if NETSTANDARD2_0
+
                 // This API is only supported on .net FX 4.7 + so limiting it
                 // to .net core since that is the one affected. 
                 AddVariable(".NET Version", () => System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription.ToString());
                 AddVariable("Processor Architecture", () => System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString());
-#else
-                AddVariable(".NET Version", () => DotnetVersion.GetDotnetFrameworkVersion().ToString());
-                AddVariable("Processor Architecture", () => (IntPtr.Size == 8) ? "X64" : "X86");
-#endif
+
                 AddVariable("Total Physical System Memory", () => TotalPhysicalMemory);
 
                 var process = TryGetCurrentProcess();
@@ -76,43 +67,10 @@ namespace NewRelic.Agent.Core
                 if (!String.IsNullOrEmpty(configurationService.Configuration.AppSettingsConfigFilePath))
                     AddVariable("Application Config", () => configurationService.Configuration.AppSettingsConfigFilePath);
 
-#if NET45
-                // This stuff is only available to web apps.
-                if (TryGetAppDomainAppId() != null)
-                {
-                    AddVariable("AppDomainAppPath", () => AppDomainAppPath);
-                    AddVariable("AppDomainAppId", () => HttpRuntime.AppDomainAppId);
-                    AddVariable("AppDomainAppVirtualPath", () => HttpRuntime.AppDomainAppVirtualPath);
-                    AppDomainAppPath = TryGetAppPath(() => HttpRuntime.AppDomainAppPath);
-                    AddVariable("UsingIntegratedPipeline", () => HttpRuntime.UsingIntegratedPipeline.ToString());
-
-                    var iisVersion = TryGetIisVersion();
-                    if (iisVersion != null)
-                        AddVariable("IIS Version", () => iisVersion.ToString());
-
-                }
-#endif
-
                 AddVariable("Plugin List", GetLoadedAssemblyNames);
 
 #if DEBUG
 				AddVariable("Debug Build", () => true.ToString());
-#endif
-
-#if NET45
-                var compilationSection = WebConfigurationManager.GetSection("system.web/compilation") as CompilationSection;
-                if (compilationSection?.DefaultLanguage != null)
-                    AddVariable("system.web.compilation.defaultLanguage", () => compilationSection.DefaultLanguage);
-
-                var managementObjects = TryGetManagementObjects("Select * from Win32_ComputerSystem");
-                foreach (var managementObject in managementObjects)
-                {
-                    if (managementObject == null)
-                        continue;
-
-                    AddVariable("Physical Processors", () => managementObject["NumberOfProcessors"]);
-                    AddVariable("Logical Processors", () => managementObject["NumberOfLogicalProcessors"]);
-                }
 #endif
             }
             catch (Exception ex)
@@ -163,21 +121,6 @@ namespace NewRelic.Agent.Core
             }
         }
 
-#if NET45
-        private static string TryGetAppDomainAppId()
-        {
-            try
-            {
-                return HttpRuntime.AppDomainAppId;
-            }
-            catch (Exception ex)
-            {
-                Log.Warn(ex);
-                return null;
-            }
-        }
-#endif
-
         public static string TryGetAppPath(Func<string> pathGetter)
         {
             try
@@ -207,37 +150,6 @@ namespace NewRelic.Agent.Core
             }
         }
 
-#if NET45
-        public Version TryGetIisVersion()
-        {
-            try
-            {
-                using (var componentsKey = Registry.LocalMachine?.OpenSubKey(@"Software\Microsoft\InetStp", false))
-                {
-                    if (componentsKey == null)
-                        return null;
-
-                    var majorVersionObject = componentsKey.GetValue("MajorVersion", -1);
-                    var minorVersionObject = componentsKey.GetValue("MinorVersion", -1);
-
-                    if (majorVersionObject == null || minorVersionObject == null)
-                        return null;
-
-                    var majorVersion = (int)majorVersionObject;
-                    var minorVersion = (int)minorVersionObject;
-                    if (majorVersion == -1 || minorVersion == -1)
-                        return null;
-
-                    return new Version(majorVersion, minorVersion);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warn(ex);
-                return null;
-            }
-        }
-#endif
 
         private static IEnumerable<string> GetLoadedAssemblyNames()
         {
@@ -245,30 +157,10 @@ namespace NewRelic.Agent.Core
             return AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => assembly != null)
                 .Where(assembly => assembly.GetName().Version != versionZero)
-#if NET45
-                .Where(assembly => !(assembly is System.Reflection.Emit.AssemblyBuilder))
-#endif
+
                 .Select(assembly => assembly.FullName)
                 .ToList();
         }
-
-#if NET45
-        private static IEnumerable<ManagementBaseObject> TryGetManagementObjects(string query)
-        {
-            try
-            {
-                using (var managementObjectSearcher = new ManagementObjectSearcher(query))
-                {
-                    return managementObjectSearcher.Get().Cast<ManagementBaseObject>();
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warn($"Could not retrieve processor count information: {ex}");
-                return Enumerable.Empty<ManagementBaseObject>();
-            }
-        }
-#endif
 
         public class EnvironmentConverter : JsonConverter
         {

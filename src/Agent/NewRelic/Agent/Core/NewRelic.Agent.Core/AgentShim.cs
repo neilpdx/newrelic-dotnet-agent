@@ -23,80 +23,11 @@ namespace NewRelic.Agent.Core
             Log = log4net.LogManager.GetLogger(typeof(AgentShim));
         }
 
-#if NETSTANDARD2_0
 		static AgentShim()
 		{
 			Initialize();
 		}
-#else
-        private static bool _initialized = false;
-        private static object _initLock = new object();
 
-        static bool TryInitialize(string method)
-        {
-            if (Monitor.IsEntered(_initLock)) return false;
-            if (DeferInitialization(method)) return false;
-
-            lock (_initLock)
-            {
-                if (!_initialized)
-                {
-                    Initialize();
-                    _initialized = true;
-                }
-
-                return true;
-            }
-        }
-
-        private static HashSet<string> _deferInitializationOnTheseMethods = new HashSet<string>
-        {
-            "System.Net.Http.HttpClient.SendAsync",
-            "System.Net.HttpWebRequest.SerializeHeaders",
-            "System.Net.HttpWebRequest.GetResponse"
-        };
-
-        private static HashSet<string> DeferInitializationOnTheseMethods
-        {
-            get
-            {
-                if (!_deferAgentInitMethodListInitialized)
-                {
-                    InitializeDeferAgentInitMethodList();
-                }
-
-                return _deferInitializationOnTheseMethods;
-            }
-        }
-
-        private static bool _deferAgentInitMethodListInitialized = false;
-        private static object _methodListInitLock = new object();
-
-        private static void InitializeDeferAgentInitMethodList()
-        {
-            var methodsFromEnvVar = System.Environment.GetEnvironmentVariable("NEW_RELIC_DELAY_AGENT_INIT_METHOD_LIST");
-            var additionalMethods = !string.IsNullOrWhiteSpace(methodsFromEnvVar)
-                ? methodsFromEnvVar.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                : new string[] { };
-
-            lock (_methodListInitLock)
-            {
-                if (!_deferAgentInitMethodListInitialized)
-                {
-                    foreach (var method in additionalMethods)
-                    {
-                        _deferInitializationOnTheseMethods.Add(method);
-                    }
-                    _deferAgentInitMethodListInitialized = true;
-                }
-            }
-        }
-
-        static bool DeferInitialization(string method)
-        {
-            return DeferInitializationOnTheseMethods.Contains(method);
-        }
-#endif
 
         /// <summary>
         /// Creates a tracer (if appropriate) and returns a delegate for the tracer's finish method.
@@ -115,13 +46,6 @@ namespace NewRelic.Agent.Core
             object[] args,
             ulong functionId)
         {
-#if NET45
-			if (!_initialized)
-			{
-				if (!TryInitialize($"{typeName}.{methodName}")) return NoOpFinishTracer;
-			}
-#endif
-
             var tracer = GetTracer(
                 tracerFactoryName,
                 tracerArguments,

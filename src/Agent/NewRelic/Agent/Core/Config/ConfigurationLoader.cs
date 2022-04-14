@@ -13,10 +13,8 @@ using System.Web;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-#if NETSTANDARD2_0
 using System.Reflection;
 using NewRelic.Agent.Core.Configuration;
-#endif
 
 namespace NewRelic.Agent.Core.Config
 {
@@ -38,41 +36,12 @@ namespace NewRelic.Agent.Core.Config
         /// <returns></returns>
         public static ValueWithProvenance<string> GetWebConfigAppSetting(string key)
         {
-#if NETSTANDARD2_0
 			return null;
-#else
-            try
-            {
-                if (HttpRuntime.AppDomainAppId != null)
-                {
-                    string appVirtualPath = HttpRuntime.AppDomainAppVirtualPath;
-                    var webConfiguration = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration(appVirtualPath);
-                    var setting = webConfiguration.AppSettings.Settings[key];
-                    if (setting != null)
-                    {
-                        return new ValueWithProvenance<string>(setting.Value, webConfiguration.FilePath);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                // Can't log anything here because the logging hasn't been initialized.  Just swallow the exception.
-            }
-            return new ValueWithProvenance<string>(System.Web.Configuration.WebConfigurationManager.AppSettings[key],
-                "WebConfigurationManager default app settings");
-#endif
         }
 
         public static ValueWithProvenance<string> GetConfigSetting(string key)
         {
             ValueWithProvenance<string> value = GetWebConfigAppSetting(key);
-#if NET45
-			if (value.Value == null)
-			{
-				value = new ValueWithProvenance<string>(ConfigurationManager.AppSettings[key],
-					"ConfigurationManager app setting");
-			}
-#endif
             return value;
         }
 
@@ -96,9 +65,6 @@ namespace NewRelic.Agent.Core.Config
 
         private static string TryGetAgentConfigFileFromAppConfig()
         {
-
-#if NETSTANDARD2_0
-
 			try
 			{
 				var fileName = AppSettingsConfigResolveWhenUsed.GetAppSetting("NewRelic.ConfigFile");
@@ -114,31 +80,12 @@ namespace NewRelic.Agent.Core.Config
 			{
 				return null;
 			}
-
-#else
-            try
-            {
-                var fileName = GetConfigSetting("NewRelic.ConfigFile").Value;
-                if (!File.Exists(fileName))
-                {
-                    return null;
-                }
-
-                Log.InfoFormat("Configuration file found in path pointed to by NewRelic.ConfigFile appSetting of app/web config: {0}", fileName);
-                return fileName;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-#endif
         }
 
         private static string TryGetAgentConfigFileFromAppRoot()
         {
-#if NETSTANDARD2_0
-			try
-			{
+            try
+            {
 				var filename = string.Empty;
 
 				var entryAssembly = Assembly.GetEntryAssembly();
@@ -167,27 +114,6 @@ namespace NewRelic.Agent.Core.Config
 			{
 				return null;
 			}
-#else
-            try
-            {
-                if (HttpRuntime.AppDomainAppVirtualPath == null) return null;
-
-                var appRoot = HttpRuntime.AppDomainAppPath;
-                if (appRoot == null)
-                    return null;
-
-                var fileName = Path.Combine(appRoot, NewRelicConfigFileName);
-                if (!File.Exists(fileName))
-                    return null;
-
-                Log.InfoFormat("Configuration file found in app/web root directory: {0}", fileName);
-                return fileName;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-#endif
         }
 
         private static string TryGetAgentConfigFileFromExecutionPath()
@@ -524,25 +450,14 @@ namespace NewRelic.Agent.Core.Config
                 return Strings.SafeFileName(name);
             }
 
-#if NETSTANDARD2_0
-			try
-			{
+            try
+            {
 				name = AppDomain.CurrentDomain.FriendlyName;
 			}
 			catch (Exception)
 			{
 				name = _processStatic.GetCurrentProcess().ProcessName;
 			}
-#else
-            if (HttpRuntime.AppDomainAppId != null)
-            {
-                name = HttpRuntime.AppDomainAppId.ToString();
-            }
-            else
-            {
-                name = _processStatic.GetCurrentProcess().ProcessName;
-            }
-#endif
 
             return "newrelic_agent_" + Strings.SafeFileName(name) + ".log";
         }

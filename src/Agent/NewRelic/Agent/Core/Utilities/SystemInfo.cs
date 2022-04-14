@@ -29,9 +29,7 @@ namespace NewRelic.Agent.Core.Utilities
         public ulong? GetTotalPhysicalMemoryBytes()
         {
             var isLinux = false;
-#if NETSTANDARD2_0
             isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-#endif
             if (isLinux)
             {
                 try
@@ -88,9 +86,6 @@ namespace NewRelic.Agent.Core.Utilities
 
         public BootIdResult GetBootId()
         {
-
-#if NETSTANDARD2_0
-
 			bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
 			if (isLinux)
@@ -110,8 +105,6 @@ namespace NewRelic.Agent.Core.Utilities
 
 				return new BootIdResult(bootId, ValidateBootId(bootId));
 			}
-#endif
-
             return new BootIdResult(null, true);
         }
 

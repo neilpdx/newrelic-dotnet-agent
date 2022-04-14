@@ -4,10 +4,12 @@
 using System;
 using Grpc.Core;
 using System.Threading;
-using System.Collections.Generic;
 using NewRelic.Agent.Extensions.Providers.Wrapper;
 using NewRelic.Core.Logging;
 using System.Threading.Tasks;
+using Grpc.Net.Client;
+using NewRelic.Agent.Core.Segments;
+using System.Net.Http;
 
 namespace NewRelic.Agent.Core.DataTransport
 {
@@ -53,24 +55,23 @@ namespace NewRelic.Agent.Core.DataTransport
         bool IsConnected { get; }
         bool CreateChannel(string host, int port, bool ssl, Metadata headers, int connectTimeoutMs, CancellationToken cancellationToken);
         bool CreateStreams(Metadata headers, int connectTimeoutMs, CancellationToken cancellationToken, out IClientStreamWriter<TRequest> requestStream, out IAsyncStreamReader<TResponse> responseStream);
-        bool TrySendData(IClientStreamWriter<TRequest> stream, TRequest item, int sendTimeoutMs, CancellationToken cancellationToken);
+        Task<bool> TrySendData(IClientStreamWriter<TRequest> stream, TRequest item, CancellationToken cancellationToken);
         void TryCloseRequestStream(IClientStreamWriter<TRequest> requestStream);
         void Shutdown();
     }
 
     public abstract class GrpcWrapper<TRequest, TResponse> : IGrpcWrapper<TRequest, TResponse>
     {
-        private readonly List<ChannelState> _notConnectedStates = new List<ChannelState> { ChannelState.TransientFailure, ChannelState.Shutdown };
-
         protected GrpcWrapper()
         {
+
         }
 
-        private Channel _channel { get; set; }
+        private GrpcChannel _channel { get; set; }
 
-        protected abstract AsyncDuplexStreamingCall<TRequest, TResponse> CreateStreamsImpl(Channel channel, Metadata headers, int connectTimeoutMs, CancellationToken cancellationToken);
+        protected abstract AsyncDuplexStreamingCall<TRequest, TResponse> CreateStreamsImpl(GrpcChannel channel, Metadata headers, int connectTimeoutMs, CancellationToken cancellationToken);
 
-        public bool IsConnected => _channel != null && !_notConnectedStates.Contains(_channel.State);
+        public bool IsConnected => _channel != null;
 
         public bool CreateChannel(string host, int port, bool ssl, Metadata headers, int connectTimeoutMs, CancellationToken cancellationToken)
         {
@@ -80,9 +81,27 @@ namespace NewRelic.Agent.Core.DataTransport
                 Shutdown();
 
                 var credentials = ssl ? new SslCredentials() : ChannelCredentials.Insecure;
-                var channel = new Channel(host, port, credentials);
+                var grpcChannelOptions = new GrpcChannelOptions();
+                grpcChannelOptions.Credentials = credentials;
 
-                if (TestChannel(channel, headers, connectTimeoutMs, cancellationToken))
+                var uriBuilder = new UriBuilder
+                {
+                    Scheme = "https",
+                    Host = host,
+                    Port = port
+                };
+
+
+#if NET461_OR_GREATER
+                grpcChannelOptions.HttpHandler = new WinHttpHandler();
+#else
+                grpcChannelOptions.HttpHandler = new HttpClientHandler();
+#endif
+
+
+                var channel = GrpcChannel.ForAddress(uriBuilder.Uri, grpcChannelOptions);
+
+                if (TestChannel(channel))
                 {
                     _channel = channel;
                     return true;
@@ -107,17 +126,13 @@ namespace NewRelic.Agent.Core.DataTransport
             }
         }
 
-        private bool TestChannel(Channel channel, Metadata headers, int connectTimeoutMs, CancellationToken cancellationToken)
+        private bool TestChannel(GrpcChannel channel)
         {
             try
             {
-                if (channel.ConnectAsync().Wait(connectTimeoutMs, cancellationToken) && !_notConnectedStates.Contains(channel.State))
-                {
-                    using (CreateStreamsImpl(channel, headers, connectTimeoutMs, cancellationToken))
-                    {
-                        return true;
-                    }
-                }
+                var client = new IngestService.IngestServiceClient(channel);
+                return true;
+
             }
             catch (Exception) { }
 
@@ -158,7 +173,7 @@ namespace NewRelic.Agent.Core.DataTransport
         }
 
 
-        public bool TrySendData(IClientStreamWriter<TRequest> requestStream, TRequest item, int sendTimeoutMs, CancellationToken cancellationToken)
+        public async Task<bool> TrySendData(IClientStreamWriter<TRequest> requestStream, TRequest item, CancellationToken cancellationToken)
         {
             try
             {
@@ -168,7 +183,9 @@ namespace NewRelic.Agent.Core.DataTransport
                     return false;
                 }
 
-                return requestStream.WriteAsync(item).Wait(sendTimeoutMs, cancellationToken);
+                await requestStream.WriteAsync(item);
+
+                return true;
             }
             catch (Exception ex)
             {

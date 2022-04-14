@@ -36,23 +36,6 @@ namespace NewRelic.Agent.Core
         /// </summary>
         private static readonly string TemporaryEventLogAppenderName = "TemporaryEventLog";
 
-#if NET45
-		/// <summary>
-		/// The name of the event log appender.
-		/// </summary>
-		private static readonly string EventLogAppenderName = "EventLog";
-
-		/// <summary>
-		/// The name of the event log to log to.
-		/// </summary>
-		private static readonly string EventLogName = "Application";
-
-		/// <summary>
-		/// The event source name.
-		/// </summary>
-		private static readonly string EventLogSourceName = "New Relic .NET Agent";
-#endif
-
         /// <summary>
         /// The numeric level of the Audit log.
         /// </summary>
@@ -265,18 +248,7 @@ namespace NewRelic.Agent.Core
         /// <param name="logger"></param>
         private static void SetupTemporaryEventLogAppender(log4netLogger logger)
         {
-#if NET45
-			var appender = new EventLogAppender();
-			appender.Layout = eventLoggerLayout;
-			appender.Name = TemporaryEventLogAppenderName;
-			appender.LogName = EventLogName;
-			appender.ApplicationName = EventLogSourceName;
-			appender.Threshold = Level.Warn;
-			appender.AddFilter(GetNoAuditFilter());
-			appender.ActivateOptions();
 
-			logger.AddAppender(appender);
-#endif
         }
 
         /// <summary>
@@ -286,18 +258,7 @@ namespace NewRelic.Agent.Core
         /// <param name="config">The configuration for the appender.</param>
         private static void SetupEventLogAppender(log4netLogger logger, ILogConfig config)
         {
-#if NET45
-			var appender = new EventLogAppender();
-			appender.Layout = eventLoggerLayout;
-			appender.Threshold = Level.Warn;
-			appender.Name = EventLogAppenderName;
-			appender.LogName = EventLogName;
-			appender.ApplicationName = EventLogSourceName;
-			appender.AddFilter(GetNoAuditFilter());
-			appender.ActivateOptions();
 
-			logger.AddAppender(appender);
-#endif
         }
 
         /// <summary>

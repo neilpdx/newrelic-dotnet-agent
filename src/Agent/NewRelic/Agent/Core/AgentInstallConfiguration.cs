@@ -11,32 +11,23 @@ using Newtonsoft.Json;
 using System.Reflection;
 using System.Diagnostics;
 using NewRelic.Core.Logging;
-#if NET45
-using System.Web;
-using Microsoft.Win32;
-#endif
+
 
 namespace NewRelic.Agent.Core
 {
     public static partial class AgentInstallConfiguration
     {
-#if NETSTANDARD2_0
         private const string NewRelicHomeEnvironmentVariable = "CORECLR_NEWRELIC_HOME";
         private const string RuntimeDirectoryName = "netcore";
-#else
-        private const string NewRelicHomeEnvironmentVariable = "NEWRELIC_HOME";
-        private const string RuntimeDirectoryName = "netframework";
-#endif
+
         private const string NewRelicInstallPathEnvironmentVariable = "NEWRELIC_INSTALL_PATH";
         private const string NewRelicLogDirectoryEnvironmentVariable = "NEWRELIC_LOG_DIRECTORY";
         private const string NewRelicLogLevelEnvironmentVariable = "NEWRELIC_LOG_LEVEL";
 
         public static bool IsWindows { get; }
-#if NET45
-		public static DotnetFrameworkVersion DotnetFrameworkVersion { get; }
-#else
+
         public static DotnetCoreVersion DotnetCoreVersion { get; }
-#endif
+
         public static bool IsNetstandardPresent { get; }
         public static bool IsNet46OrAbove { get; }
         public static bool IsNetCore30OrAbove { get; }
@@ -56,11 +47,7 @@ namespace NewRelic.Agent.Core
 
         static AgentInstallConfiguration()
         {
-#if NET45
-			IsWindows = true;
-#else
             IsWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
-#endif
             NewRelicHome = GetNewRelicHome();
             NewRelicInstallPath = GetNewRelicInstallPath();
             NewRelicLogDirectory = GetNewRelicLogDirectory();
@@ -75,24 +62,13 @@ namespace NewRelic.Agent.Core
             IsNetCore30OrAbove = GetIsNetCore30OrAbove();
             ProcessId = new ProcessStatic().GetCurrentProcess().Id;
             AppDomainName = AppDomain.CurrentDomain.FriendlyName;
-#if NET45
-			if (HttpRuntime.AppDomainAppVirtualPath != null)
-			{
-				AppDomainAppVirtualPath = HttpRuntime.AppDomainAppVirtualPath;
-			}
 
-			try
-			{
-				DotnetFrameworkVersion = DotnetVersion.GetDotnetFrameworkVersion();
-			}
-			catch { }
-#else
             try
             {
                 DotnetCoreVersion = DotnetVersion.GetDotnetCoreVersion();
             }
             catch { }
-#endif
+
             AgentInfo = GetAgentInfo();
         }
 
@@ -137,19 +113,11 @@ namespace NewRelic.Agent.Core
 
         private static bool GetIsNet46OrAbove()
         {
-#if NET45
-			var net46Version = new Version(4, 0, 30319, 42000);
-			return System.Environment.Version >= net46Version;
-#else
             return true;
-#endif
         }
 
         private static bool GetIsNetCore30OrAbove()
         {
-#if NET45
-			return false;
-#else
             var version = System.Environment.Version;
 
             // Prior to .NET Core 3.0 System.Environment.Version returned 4.0.30319.42000.
@@ -158,17 +126,14 @@ namespace NewRelic.Agent.Core
             if (version.Major == 4) return false;
 
             return version.Major >= 3;
-#endif
+
         }
 
         private static string GetNewRelicHome()
         {
             var newRelicHome = System.Environment.GetEnvironmentVariable(NewRelicHomeEnvironmentVariable);
             if (newRelicHome != null && Directory.Exists(newRelicHome)) return Path.GetFullPath(newRelicHome);
-#if NET45
-			var key = Registry.LocalMachine.OpenSubKey(@"Software\New Relic\.NET Agent");
-			if (key != null) newRelicHome = (string)key.GetValue("NewRelicHome");
-#endif
+
             return newRelicHome;
         }
 

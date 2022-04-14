@@ -3,11 +3,7 @@
 
 using System;
 using NewRelic.Core.Logging;
-
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Configuration;
 using System.IO;
-#endif
 
 namespace NewRelic.Agent.Core.Configuration
 {
@@ -35,44 +31,6 @@ namespace NewRelic.Agent.Core.Configuration
         }
     }
 
-#if NET45
-
-	public class ConfigurationManagerStatic : IConfigurationManagerStatic
-	{
-		private bool localConfigChecksDisabled;
-
-        public string AppSettingsFilePath
-        {
-            get
-            {
-                try
-                {
-                    if (!localConfigChecksDisabled)
-                        return AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
-                }
-                catch { }
-
-                return null;
-            }
-        }
-
-		public string GetAppSetting(string key)
-		{
-			if (localConfigChecksDisabled || key == null) return null;
-
-			try
-			{
-				return System.Configuration.ConfigurationManager.AppSettings.Get(key);
-			}
-			catch (Exception ex)
-			{
-				Log.Error($"Failed to read '{key}' using System.Configuration.ConfigurationManager.AppSettings. Reading New Relic configuration values using System.Configuration.ConfigurationManager.AppSettings will be disabled. Exception: {ex}");
-				localConfigChecksDisabled = true;
-				return null;
-			}
-		}
-	}
-#else
     public class ConfigurationManagerStatic : IConfigurationManagerStatic
     {
         private bool localConfigChecksDisabled;
@@ -103,5 +61,4 @@ namespace NewRelic.Agent.Core.Configuration
             }
         }
     }
-#endif
 }

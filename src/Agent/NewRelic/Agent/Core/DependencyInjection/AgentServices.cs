@@ -52,11 +52,7 @@ namespace NewRelic.Agent.Core.DependencyInjection
     {
         public static IContainer GetContainer()
         {
-#if NET45
-			return new WindsorContainer();
-#else
             return new CoreContainer();
-#endif
         }
 
         /// <summary>
@@ -85,16 +81,10 @@ namespace NewRelic.Agent.Core.DependencyInjection
             container.Register<Func<ISampledEventListener<ThreadpoolThroughputEventsSample>>>(() => new ThreadEventsListener());
             container.Register<ThreadStatsSampler, ThreadStatsSampler>();
             container.Register<IGcSampleTransformer, GcSampleTransformer>();
-#if NETFRAMEWORK
-			container.Register<Func<string, IPerformanceCounterCategoryProxy>>(PerformanceCounterProxyFactory.DefaultCreatePerformanceCounterCategoryProxy);
-			container.Register<Func<string, string, string, IPerformanceCounterProxy>>(PerformanceCounterProxyFactory.DefaultCreatePerformanceCounterProxy);
-			container.Register<IPerformanceCounterProxyFactory, PerformanceCounterProxyFactory>();
-			container.Register<GcSampler, GcSampler>();
-#else
+
             container.Register<Func<ISampledEventListener<Dictionary<GCSampleType, float>>>>(() => new GCEventsListener());
             container.Register<Func<GCSamplerNetCore.SamplerIsApplicableToFrameworkResult>>(GCSamplerNetCore.FXsamplerIsApplicableToFrameworkDefault);
             container.Register<GCSamplerNetCore, GCSamplerNetCore>();
-#endif
 
             container.Register<IBrowserMonitoringPrereqChecker, BrowserMonitoringPrereqChecker>();
             container.Register<IProcessStatic, ProcessStatic>();
@@ -134,9 +124,7 @@ namespace NewRelic.Agent.Core.DependencyInjection
             container.Register<IApiSupportabilityMetricCounters, IOutOfBandMetricSource, ApiSupportabilityMetricCounters>();
             container.Register<ICATSupportabilityMetricCounters, IOutOfBandMetricSource, CATSupportabilityMetricCounters>();
             container.Register<IAgentTimerService, AgentTimerService>();
-#if NET45
-			container.RegisterFactory<IEnumerable<IOutOfBandMetricSource>>(container.ResolveAll<IOutOfBandMetricSource>);
-#endif
+
             container.Register<IThreadPoolStatic, ThreadPoolStatic>();
             container.Register<ITransactionTransformer, TransactionTransformer>();
             container.Register<ICustomEventTransformer, CustomEventTransformer>();
@@ -213,17 +201,9 @@ namespace NewRelic.Agent.Core.DependencyInjection
             container.Resolve<AssemblyResolutionService>();
             container.Resolve<ITransactionFinalizer>();
             container.Resolve<IAgentHealthReporter>();
-#if NETFRAMEWORK
-			// Start GCSampler on separate thread due to delay in collecting Instance Names,
-			// which can stall application startup and cause the app start to timeout
-			// (e.g. Windows Services have a default startup timeout of 30 seconds)
-			var gcSampler = container.Resolve<GcSampler>();
-			var samplerStartThread = new Thread(() => gcSampler.Start());
-			samplerStartThread.IsBackground = true;
-			samplerStartThread.Start();
-#else
+
             container.Resolve<GCSamplerNetCore>().Start();
-#endif
+
             container.Resolve<CpuSampler>().Start();
             container.Resolve<MemorySampler>().Start();
             container.Resolve<ThreadStatsSampler>().Start();

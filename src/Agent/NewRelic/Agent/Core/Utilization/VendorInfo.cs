@@ -13,19 +13,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-#if NETSTANDARD2_0
 using System.IO;
 using System.Runtime.InteropServices;
-#endif
 
 namespace NewRelic.Agent.Core.Utilization
 {
     public class VendorInfo
     {
         private const string ValidateMetadataRegex = @"^[a-zA-Z0-9-_. /]*$";
-#if NETSTANDARD2_0
 		private const string ContainerIdRegex = @"[0-9a-f]{64}";
-#endif
 
         private const string AwsName = @"aws";
         private const string AzureName = @"azure";
@@ -272,7 +268,6 @@ namespace NewRelic.Agent.Core.Utilization
 
         private IVendorModel GetDockerVendorInfo()
         {
-#if NETSTANDARD2_0
 			bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 			int subsystemsIndex = 1;
 			int controlGroupIndex = 2;
@@ -313,7 +308,6 @@ namespace NewRelic.Agent.Core.Utilization
 				}
 				
 			}
-#endif
             return null;
         }
 

@@ -314,14 +314,8 @@ namespace NewRelic.Agent.Core.DataTransport
         {
             var appNames = string.Join(":", _configuration.ApplicationNames.ToArray());
 
-#if NETSTANDARD2_0
-			return $"{Path.GetFileName(_processStatic.GetCurrentProcess().MainModuleFileName)}{appNames}";
-#else
+            return $"{Path.GetFileName(_processStatic.GetCurrentProcess().MainModuleFileName)}{appNames}";
 
-            return HttpRuntime.AppDomainAppId != null
-                ? $"{HttpRuntime.AppDomainAppId}:{_environment.AppDomainAppPath}{appNames}"
-                : $"{Path.GetFileName(_processStatic.GetCurrentProcess().MainModuleFileName)}{appNames}";
-#endif
         }
 
         private JavascriptAgentSettingsModel GetJsAgentSettings()
