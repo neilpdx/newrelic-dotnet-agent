@@ -19,7 +19,7 @@ namespace NewRelic.Agent.Core.DataTransport
             }
 
             var client = new IngestService.IngestServiceClient(channel);
-            var streams = client.RecordSpan(headers: headers, cancellationToken: cancellationToken);
+            var streams = client.RecordSpan(headers: headers, cancellationToken: cancellationToken, deadline: DateTime.UtcNow.AddMilliseconds(connectTimeoutMs));
 
             return streams;
         }
