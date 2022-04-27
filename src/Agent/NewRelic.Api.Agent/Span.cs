@@ -36,5 +36,10 @@ namespace NewRelic.Api.Agent
 
             return this;
         }
+
+        public ISpan SetName(string name)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

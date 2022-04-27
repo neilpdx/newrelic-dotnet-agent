@@ -36,6 +36,8 @@ namespace NewRelic.Agent.Core.Segments
         private static ConfigurationSubscriber _configurationSubscriber = new ConfigurationSubscriber();
 
         public IAttributeDefinitions AttribDefs => _transactionSegmentState.AttribDefs;
+
+        // Josh - this looks important
         public string TypeName => MethodCallData.TypeName;
 
         private SpanAttributeValueCollection _customAttribValues;
@@ -48,7 +50,10 @@ namespace NewRelic.Agent.Core.Segments
             ParentUniqueId = transactionSegmentState.ParentSegmentId();
             UniqueId = transactionSegmentState.CallStackPush(this);
             MethodCallData = methodCallData;
+
+            // Josh - this looks important
             Data = new MethodSegmentData(methodCallData.TypeName, methodCallData.MethodName);
+
             Data.AttachSegmentDataState(this);
             Combinable = false;
             IsLeaf = false;

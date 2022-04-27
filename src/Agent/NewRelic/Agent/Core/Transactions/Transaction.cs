@@ -217,6 +217,7 @@ namespace NewRelic.Agent.Core.Transactions
             if (segmentName.Length <= 0)
                 throw new ArgumentException("A segment name cannot be an empty string.");
 
+            // Josh - this looks important
             return new CustomSegmentData(segmentName);
         }
 
