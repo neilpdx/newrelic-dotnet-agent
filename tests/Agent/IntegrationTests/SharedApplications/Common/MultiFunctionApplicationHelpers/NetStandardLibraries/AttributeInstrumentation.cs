@@ -85,8 +85,12 @@ namespace MultiFunctionApplicationHelpers.NetStandardLibraries.Internal
 
         [Trace]
         [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
-        private static void DoSomeWork()
+        private static void DoSomeWork(string customSpanName = null)
         {
+            if(!string.IsNullOrEmpty(customSpanName))
+            {
+                NewRelic.Api.Agent.NewRelic.GetAgent().CurrentSpan.SetName("blah");
+            }
         }
 
         [Trace]
@@ -118,6 +122,17 @@ namespace MultiFunctionApplicationHelpers.NetStandardLibraries.Internal
         private static async Task<string> SpanOrTransactionBasedOnConfig()
         {
             return await Task.FromResult("New Transaction or span based on config.");
+        }
+
+        [LibraryMethod]
+        [Transaction]
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        private static void TransactionWithCustomSpanName(string spanName)
+        {
+            // Ensure we will be traced
+            Task.Delay(TimeSpan.FromMilliseconds(5000)).Wait();
+
+            DoSomeWork();
         }
     }
 }
