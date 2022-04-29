@@ -85,9 +85,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewRelic.Agent.Api">
-      <Version>8.41.1</Version>
-    </PackageReference>
+    <ProjectReference Include="..\..\..\..\..\src\Agent\NewRelic.Api.Agent\NewRelic.Api.Agent.csproj">
+      <Project>{b187563a-795b-4c70-a525-6470b88ad341}</Project>
+      <Name>NewRelic.Api.Agent</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

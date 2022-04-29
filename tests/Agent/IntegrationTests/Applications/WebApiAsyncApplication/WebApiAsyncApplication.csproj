@@ -130,9 +130,6 @@
     <PackageReference Include="Modernizr">
       <Version>2.8.3</Version>
     </PackageReference>
-    <PackageReference Include="NewRelic.Agent.Api">
-      <Version>8.41.1</Version>
-    </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>11.0.1</Version>
     </PackageReference>
@@ -174,6 +171,12 @@
     <None Include="Properties\PublishProfiles\LocalDeploy.pubxml">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\Agent\NewRelic.Api.Agent\NewRelic.Api.Agent.csproj">
+      <Project>{b187563a-795b-4c70-a525-6470b88ad341}</Project>
+      <Name>NewRelic.Api.Agent</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -110,9 +110,6 @@
     <PackageReference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
       <Version>2.0.1</Version>
     </PackageReference>
-    <PackageReference Include="NewRelic.Agent.Api">
-      <Version>8.41.1</Version>
-    </PackageReference>
     <PackageReference Include="RestSharp">
       <Version>105.2.3</Version>
     </PackageReference>
@@ -129,7 +126,12 @@
       <Version>4.0.40</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\Agent\NewRelic.Api.Agent\NewRelic.Api.Agent.csproj">
+      <Project>{b187563a-795b-4c70-a525-6470b88ad341}</Project>
+      <Name>NewRelic.Api.Agent</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
