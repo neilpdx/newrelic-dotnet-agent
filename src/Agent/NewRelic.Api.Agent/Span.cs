@@ -27,7 +27,6 @@ namespace NewRelic.Api.Agent
             try
             {
                 _wrappedSpan.AddCustomAttribute(key, value);
-                return this;
             }
             catch (RuntimeBinderException)
             {
@@ -37,9 +36,25 @@ namespace NewRelic.Api.Agent
             return this;
         }
 
+        private static bool _isSetNameAvailable = true;
+
         public ISpan SetName(string name)
         {
-            throw new System.NotImplementedException();
+            if (!_isSetNameAvailable)
+            {
+                return _noOpSpan.SetName(name);
+            }
+
+            try
+            {
+                _wrappedSpan.SetName(name);
+            }
+            catch (RuntimeBinderException)
+            {
+                _isSetNameAvailable = false;
+            }
+
+            return this;
         }
     }
 }

@@ -33,6 +33,8 @@ namespace NewRelic.Agent.Core.Segments
 
         public string TypeName => string.Empty;
 
+        public string SegmentNameOverride { get; set; } = null;
+
         public void End() { }
         public void End(Exception ex) { }
         public void MakeCombinable() { }
@@ -50,6 +52,11 @@ namespace NewRelic.Agent.Core.Segments
         }
 
         public ISpan AddCustomAttribute(string key, object value)
+        {
+            return this;
+        }
+
+        public ISpan SetName(string name)
         {
             return this;
         }

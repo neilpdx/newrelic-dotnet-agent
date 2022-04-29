@@ -9,7 +9,7 @@ namespace NewRelic.Api.Agent
     public interface ISpan
     {
         /// <summary>
-        /// Add a key/value pair to the transaction. These are reported in errors and transaction traces.
+        /// Add a key/value pair to the span.
         /// </summary>
         /// <param name="key"> The key name to add to the span attributes. Limited to 255-bytes.</param>
         /// <param name="value"> The value to add to the current span. Limited to 255-bytes.</param>

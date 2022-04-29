@@ -49,5 +49,28 @@ namespace NewRelic.Agent.Core.Api
 
             return _span;
         }
+
+        public object SetName(string name)
+        {
+            try
+            {
+                _apiSupportabilityMetricCounters.Record(ApiMethod.SpanSetName);
+
+                _span.SetName(name);
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    Log.Error($"Error in SetName: {ex}");
+                }
+                catch (Exception)
+                {
+                    // Swallow the error.. nom nom
+                }
+            }
+
+            return _span;
+        }
     }
 }

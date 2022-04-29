@@ -51,7 +51,6 @@ namespace NewRelic.Agent.Core.Segments
             UniqueId = transactionSegmentState.CallStackPush(this);
             MethodCallData = methodCallData;
 
-            // Josh - this looks important
             Data = new MethodSegmentData(methodCallData.TypeName, methodCallData.MethodName);
 
             Data.AttachSegmentDataState(this);
@@ -224,6 +223,8 @@ namespace NewRelic.Agent.Core.Segments
             }
         }
 
+        public string SegmentNameOverride { get; set; }
+
         private void Finish()
         {
             var endTime = _transactionSegmentState.GetRelativeTime();
@@ -312,6 +313,12 @@ namespace NewRelic.Agent.Core.Segments
 
         public string GetTransactionTraceName()
         {
+            // TODO-JOSH: check with someone else that this is an OK approach
+            if(!string.IsNullOrWhiteSpace(SegmentNameOverride))
+            {
+                return SegmentNameOverride;
+            }
+
             return Data.GetTransactionTraceName();
         }
 
@@ -361,6 +368,13 @@ namespace NewRelic.Agent.Core.Segments
 
             AttribDefs.GetCustomAttributeForSpan(key).TrySetValue(customAttribValues, value);
 
+            return this;
+        }
+
+        public ISpan SetName(string name)
+        {
+            // TODO-JOSH: Do we need to format the name? Is this the right place to store this information?
+            SegmentNameOverride = name;
             return this;
         }
     }
