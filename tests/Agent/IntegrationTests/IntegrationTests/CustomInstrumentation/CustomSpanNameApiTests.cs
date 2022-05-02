@@ -41,7 +41,7 @@ namespace NewRelic.Agent.IntegrationTests.CustomInstrumentation
         {
             Fixture = fixture;
             Fixture.TestLogger = output;
-
+            Fixture.RemoteApplication.AppName = "Josh CustomSpanTests";
             Fixture.AddCommand($"AttributeInstrumentation TransactionWithCustomSpanName derp");
             Fixture.AddCommand("RootCommands DelaySeconds 5");
 
