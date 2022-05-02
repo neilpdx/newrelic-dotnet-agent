@@ -89,7 +89,7 @@ namespace MultiFunctionApplicationHelpers.NetStandardLibraries.Internal
         {
             if(!string.IsNullOrEmpty(customSpanName))
             {
-                NewRelic.Api.Agent.NewRelic.GetAgent().CurrentSpan.SetName("blah");
+                NewRelic.Api.Agent.NewRelic.GetAgent().CurrentSpan.SetName(customSpanName);
             }
         }
 
@@ -127,12 +127,12 @@ namespace MultiFunctionApplicationHelpers.NetStandardLibraries.Internal
         [LibraryMethod]
         [Transaction]
         [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
-        private static void TransactionWithCustomSpanName(string spanName)
+        public static void TransactionWithCustomSpanName(string spanName)
         {
             // Ensure we will be traced
             Task.Delay(TimeSpan.FromMilliseconds(5000)).Wait();
 
-            DoSomeWork();
+            DoSomeWork(spanName);
         }
     }
 }

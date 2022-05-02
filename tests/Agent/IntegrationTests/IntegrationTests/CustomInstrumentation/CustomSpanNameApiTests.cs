@@ -42,7 +42,7 @@ namespace NewRelic.Agent.IntegrationTests.CustomInstrumentation
             Fixture = fixture;
             Fixture.TestLogger = output;
 
-            Fixture.AddCommand($"AttributeInstrumentation MakeOtherTransactionWithThreadedCallToInstrumentedMethod");
+            Fixture.AddCommand($"AttributeInstrumentation TransactionWithCustomSpanName derp");
             Fixture.AddCommand("RootCommands DelaySeconds 5");
 
             Fixture.Actions
