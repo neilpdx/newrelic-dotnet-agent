@@ -76,6 +76,7 @@ namespace NewRelic.Agent.Core.Segments
             UniqueId = segment.UniqueId;
             ParentUniqueId = segment.ParentUniqueId;
             MethodCallData = segment.MethodCallData;
+            SegmentNameOverride = segment.SegmentNameOverride;
             _parameters = parameters;
             Combinable = segment.Combinable;
             IsLeaf = false;
