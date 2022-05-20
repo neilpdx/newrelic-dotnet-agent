@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>NewRelic.Providers.Wrapper.AspNetCore</AssemblyName>
     <RootNamespace>NewRelic.Providers.Wrapper.AspNetCore</RootNamespace>
   </PropertyGroup>

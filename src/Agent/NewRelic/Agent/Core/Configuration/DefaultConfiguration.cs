@@ -130,7 +130,10 @@ namespace NewRelic.Agent.Core.Configuration
 
         private bool TryGetAppSettingAsBoolWithDefault(string key, bool defaultValue)
         {
-            var value = _newRelicAppSettings.GetValueOrDefault(key);
+            if(!_newRelicAppSettings.TryGetValue(key, out var value))
+            {
+                value = default;
+            }
 
             bool parsedBool;
             var parsedSuccessfully = bool.TryParse(value, out parsedBool);

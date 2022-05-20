@@ -13,7 +13,7 @@ using System.Web;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0_OR_GREATER
 using System.Reflection;
 using NewRelic.Agent.Core.Configuration;
 #endif
@@ -97,7 +97,7 @@ namespace NewRelic.Agent.Core.Config
         private static string TryGetAgentConfigFileFromAppConfig()
         {
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0_OR_GREATER
 
 			try
 			{

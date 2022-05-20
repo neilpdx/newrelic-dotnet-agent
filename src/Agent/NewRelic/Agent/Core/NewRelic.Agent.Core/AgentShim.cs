@@ -23,7 +23,7 @@ namespace NewRelic.Agent.Core
             Log = log4net.LogManager.GetLogger(typeof(AgentShim));
         }
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0_OR_GREATER
 		static AgentShim()
 		{
 			Initialize();

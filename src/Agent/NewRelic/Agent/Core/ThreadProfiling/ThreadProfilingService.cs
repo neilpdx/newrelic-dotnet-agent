@@ -285,7 +285,10 @@ namespace NewRelic.Agent.Core.ThreadProfiling
         {
             if (null != fids && fids.Length > 0)
             {
-                _managedThreadsFromProfiler[threadId] = _managedThreadsFromProfiler.GetValueOrDefault(threadId) + fids.Length;
+                _managedThreadsFromProfiler.TryGetValue(threadId, out var value);
+                
+
+                _managedThreadsFromProfiler[threadId] = value + fids.Length;
 
                 _threadProfilingBucket.UpdateTree(fids);
             }

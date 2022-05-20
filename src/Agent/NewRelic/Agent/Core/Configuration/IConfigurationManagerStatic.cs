@@ -4,7 +4,7 @@
 using System;
 using NewRelic.Core.Logging;
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0_OR_GREATER
 using Microsoft.Extensions.Configuration;
 using System.IO;
 #endif

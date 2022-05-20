@@ -270,7 +270,11 @@ namespace NewRelic.Agent.Core.DataTransport
                 if (string.IsNullOrEmpty(message.Text))
                     continue;
 
-                var logMethod = ServerLogLevelMap.GetValueOrDefault(message.Level) ?? Log.Info;
+                if (!ServerLogLevelMap.TryGetValue(message.Level, out var logMethod))
+                {
+                    logMethod = Log.Info;
+                }
+
                 logMethod(message.Text);
             }
         }
