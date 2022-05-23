@@ -13,12 +13,11 @@
     <Product>New Relic .NET CoreCLR Agent</Product>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net462'">
-    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <Product>New Relic .NET CoreCLR Agent</Product>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <TargetFrameworkIdentifier>.NETStandard</TargetFrameworkIdentifier>
-    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net462'">
+    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
   </PropertyGroup>
 </Project>
